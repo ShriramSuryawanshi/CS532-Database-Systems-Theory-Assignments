@@ -1,0 +1,79 @@
+ create table Employee_3 (ID number(10) Primary Key, Name varchar(20), salary number(10), deptname varchar(10));
+ 
+ insert into Employee_3 values (1, 'Alan', 500, 'Sales');
+ insert into Employee_3 values (2, 'Bob', 600, 'Accounts');
+ insert into Employee_3 values (3, 'Alan', 500, 'Marketing');
+ insert into Employee_3 values (4, 'John', 800, 'HR');
+ insert into Employee_3 values (5, 'Pam', 900, 'Training');
+ /
+ 
+ update Employee_3 set salary = -100 where name='Alan';
+ 
+ update Employee_3 set salary = 5000 where name='Alan';
+ 
+ 
+create or replace trigger negative_salary
+before update of salary on Employee_3
+for each row
+declare negative_salary_exce exception;
+declare positive_salary_exce exception;
+begin
+      if(:new.salary < 0) then raise negative_salary_exce;
+	  end if;
+	  if(:new.salary > 0) then raise positive_salary_exce;
+      end if;
+exception
+      when negative_salary_exce then
+        raise_application_error(-20001, 'Before Update Exception : Salary must be greater than zero!');
+		when positive_salary_exce then
+		raise_application_error(-20002, "Before Update Exception : No Positives as well!");
+end;
+ /
+
+ 
+create or replace trigger negative_salary
+after update of salary on Employee_3
+for each row
+declare negative_salary_exce exception;
+begin
+      if(:new.salary < 0) then raise negative_salary_exce;
+      end if;
+exception
+      when negative_salary_exce then
+        raise_application_error(-20001, 'After Update Exception : Salary must be greater than zero!');
+end;
+ /
+ 
+create or replace trigger negative_salary
+after insert on Employee_3
+for each row
+declare negative_salary_exce exception;
+begin
+      if(:new.salary < 0) then raise negative_salary_exce;
+      end if;
+exception
+      when negative_salary_exce then
+        raise_application_error(-20001, 'After Insert Exception : Salary must be greater than zero!');
+end;
+ /
+ 
+ 
+update Employee_3 set salary = -100 where ID = 1;
+
+ insert into Employee_3 values (6, 'Jason', -900, 'Servant');
+  insert into Employee_3 values (6, 'Jason', 900, 'Servant');
+ 
+ 
+create or replace trigger tuple_delete
+after delete on Employee_3
+for each row
+declare delete_exce exception;
+begin
+      if(:new.salary < 0) then raise negative_salary_exce;
+      end if;
+exception
+      when negative_salary_exce then
+        raise_application_error(-20001, 'After Delete Exception : You can not delete this!');
+end;
+ /
+
